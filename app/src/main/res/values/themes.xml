@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.KotlinDeliveryApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorPrimaryVariant">@color/green_accent</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorSecondary">@color/gray_light</item>
+        <item name="colorSecondaryVariant">@color/gray</item>
+        <item name="colorOnSecondary">@color/black</item>
+    </style>
+
+    <style name="Theme.KotlinDeliveryApp" parent="Base.Theme.KotlinDeliveryApp" />
+</resources>
