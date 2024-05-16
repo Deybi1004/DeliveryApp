@@ -3,6 +3,7 @@ package com.deybi.kotlindeliveryapp.activities
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -12,34 +13,31 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.deybi.kotlindeliveryapp.R
+import com.deybi.kotlindeliveryapp.databinding.ActivityMainBinding
+import com.deybi.kotlindeliveryapp.databinding.ActivityRegisterBinding
+import com.deybi.kotlindeliveryapp.models.ResponseHttp
+import com.deybi.kotlindeliveryapp.models.User
+import com.deybi.kotlindeliveryapp.providers.UsersProvider
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RegisterActivity : AppCompatActivity() {
 
-    lateinit var imageViewGoToLogin: ImageView
-    lateinit var editTextName: EditText
-    lateinit var editTextLastName: EditText
-    lateinit var editTextEmail: EditText
-    lateinit var editTextPhone: EditText
-    lateinit var editTextPassword: EditText
-    lateinit var editTextRepeatPassword: EditText
-    lateinit var buttonRegister: Button
+    private lateinit var binding: ActivityRegisterBinding
+
+    var usersProvider = UsersProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register)
-        imageViewGoToLogin = findViewById(R.id.imageview_go_to_login)
-        editTextName = findViewById(R.id.edittext_name)
-        editTextLastName = findViewById(R.id.edittext_last_name)
-        editTextEmail = findViewById(R.id.edittext_email)
-        editTextPhone = findViewById(R.id.edittext_phone)
-        editTextPassword = findViewById(R.id.edittext_password)
-        editTextRepeatPassword = findViewById(R.id.edittext_repeat_password)
-        buttonRegister = findViewById(R.id.btn_register)
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        imageViewGoToLogin.setOnClickListener {
+        binding.imageviewGoToLogin.setOnClickListener {
             goToLogin()
         }
-        buttonRegister.setOnClickListener {
+        binding.btnRegister.setOnClickListener {
             register()
         }
     }
@@ -50,12 +48,12 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun register() {
-        val name = editTextName.text.toString()
-        val lastName = editTextLastName.text.toString()
-        val email = editTextEmail.text.toString()
-        val phone = editTextPhone.text.toString()
-        val password = editTextPassword.text.toString()
-        val repeatPassword = editTextRepeatPassword.text.toString()
+        val name = binding.edittextName.text.toString()
+        val lastName = binding.edittextLastName.text.toString()
+        val email = binding.edittextEmail.text.toString()
+        val phone = binding.edittextPhone.text.toString()
+        val password = binding.edittextPassword.text.toString()
+        val repeatPassword = binding.edittextRepeatPassword.text.toString()
 
         if (isValidateForm(
                 name = name,
@@ -66,9 +64,34 @@ class RegisterActivity : AppCompatActivity() {
                 repeatPassword = repeatPassword
             )
         ) {
-            Toast.makeText(this,"El formulario es válido", Toast.LENGTH_SHORT).show()
+            val user = User(
+                name = name,
+                lastName = lastName,
+                email = email,
+                phone = phone,
+                password = password
+            )
+            usersProvider.register(user)?.enqueue(object : Callback<ResponseHttp> {
+                override fun onResponse(
+                    call: Call<ResponseHttp>,
+                    response: Response<ResponseHttp>
+                ) {
+
+                    Toast.makeText(this@RegisterActivity, response.message(), Toast.LENGTH_SHORT)
+                        .show()
+
+                }
+
+                override fun onFailure(p0: Call<ResponseHttp>, p1: Throwable) {
+
+                    Toast.makeText(this@RegisterActivity, "Se produjo un error", Toast.LENGTH_SHORT)
+                        .show()
+                    Log.d("RegisterActivity", "ERROR: ${p1.message}")
+                }
+
+            })
         } else {
-            Toast.makeText(this,"El formulario NO es válido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "El formulario NO es válido", Toast.LENGTH_SHORT).show()
         }
 
     }
@@ -86,7 +109,7 @@ class RegisterActivity : AppCompatActivity() {
         password: String,
         repeatPassword: String
     ): Boolean {
-        return isNameValid(name,lastName) &&
+        return isNameValid(name, lastName) &&
                 isEmailValid(email) &&
                 isPhoneValid(phone) &&
                 isPasswordValid(password, repeatPassword)
