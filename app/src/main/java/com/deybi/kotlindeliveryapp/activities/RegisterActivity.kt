@@ -13,11 +13,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.deybi.kotlindeliveryapp.R
+import com.deybi.kotlindeliveryapp.activities.client.home.ClientHomeActivity
 import com.deybi.kotlindeliveryapp.databinding.ActivityMainBinding
 import com.deybi.kotlindeliveryapp.databinding.ActivityRegisterBinding
 import com.deybi.kotlindeliveryapp.models.ResponseHttp
 import com.deybi.kotlindeliveryapp.models.User
 import com.deybi.kotlindeliveryapp.providers.UsersProvider
+import com.deybi.kotlindeliveryapp.utils.SharedPref
+import com.google.gson.Gson
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -74,11 +77,26 @@ class RegisterActivity : AppCompatActivity() {
             usersProvider.register(user)?.enqueue(object : Callback<ResponseHttp> {
                 override fun onResponse(
                     call: Call<ResponseHttp>,
-                    response: Response<ResponseHttp>
+                    res: Response<ResponseHttp>
                 ) {
+                    if (res.body()?.isSuccess == true) {
+                        saveUserInSession(res.body()?.data.toString())
+                        goToClientHome()
+                        Toast.makeText(
+                            this@RegisterActivity,
+                            res.body()?.message,
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    } else {
+                        Toast.makeText(
+                            this@RegisterActivity,
+                            res.body()?.message,
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
 
-                    Toast.makeText(this@RegisterActivity, response.message(), Toast.LENGTH_SHORT)
-                        .show()
 
                 }
 
@@ -99,6 +117,18 @@ class RegisterActivity : AppCompatActivity() {
     private fun String.isEmailValidForm(): Boolean {
         return !TextUtils.isEmpty(this) && android.util.Patterns.EMAIL_ADDRESS.matcher(this)
             .matches()
+    }
+
+    private fun saveUserInSession(data: String) {
+        val sharedPref = SharedPref(this)
+        val gson = Gson()
+        val user = gson.fromJson(data, User::class.java)
+        sharedPref.save("user", user)
+    }
+
+    private fun goToClientHome() {
+        val i = Intent(this, ClientHomeActivity::class.java)
+        startActivity(i)
     }
 
     private fun isValidateForm(

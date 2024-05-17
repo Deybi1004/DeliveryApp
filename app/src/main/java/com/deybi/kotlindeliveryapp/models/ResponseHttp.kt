@@ -7,9 +7,9 @@ class ResponseHttp(
     @SerializedName("message") val message: String,
     @SerializedName("success") val isSuccess: Boolean,
     @SerializedName("data") val data: JsonObject,
-    @SerializedName("error") val error: String,
+    @SerializedName("error") val error: JsonObject,
 ) {
     override fun toString(): String {
-        return "ResponseHttp(message='$message', isSuccess=$isSuccess, data=$data, error='$error')"
+        return "ResponseHttp(message='$message', success=$isSuccess, data=$data, error='$error')"
     }
 }

@@ -41,6 +41,7 @@ class ClientHomeActivity : AppCompatActivity() {
     private fun logout(){
         val sharedPref = SharedPref(this)
         sharedPref.remove("user")
+        sharedPref.remove("rol")
         val i = Intent(this,MainActivity::class.java)
         startActivity(i)
     }

@@ -1,6 +1,8 @@
 package com.deybi.kotlindeliveryapp.activities
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -14,6 +16,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.deybi.kotlindeliveryapp.R
 import com.deybi.kotlindeliveryapp.activities.client.home.ClientHomeActivity
+import com.deybi.kotlindeliveryapp.activities.delivery.home.DeliveryHomeActivity
+import com.deybi.kotlindeliveryapp.activities.restaurant.home.RestaurantHomeActivity
 import com.deybi.kotlindeliveryapp.databinding.ActivityMainBinding
 import com.deybi.kotlindeliveryapp.models.ResponseHttp
 import com.deybi.kotlindeliveryapp.models.User
@@ -57,7 +61,6 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, response.body()?.message, Toast.LENGTH_SHORT).show()
 
                         saveUserInSession(response.body()?.data.toString())
-                        goToClientHome()
                     } else {
                         Toast.makeText(this@MainActivity, "Los datos no son correctos", Toast.LENGTH_SHORT).show()
                     }
@@ -94,10 +97,35 @@ class MainActivity : AppCompatActivity() {
         val gson = Gson()
         val user = gson.fromJson(data, User::class.java)
         sharedPref.save("user", user)
+
+        if(user.roles?.size!! > 1){
+            goToSelectRol()
+        } else{
+            goToClientHome()
+        }
     }
 
     private fun goToClientHome(){
         val i = Intent(this,ClientHomeActivity::class.java)
+        i.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(i)
+    }
+
+    private fun goToSelectRol(){
+        val i = Intent(this,SelectRolesActivity::class.java)
+        i.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(i)
+    }
+
+    private fun goToRestaurantHome(){
+        val i = Intent(this,RestaurantHomeActivity::class.java)
+        i.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(i)
+    }
+
+    private fun goToDeliveryHome(){
+        val i = Intent(this,DeliveryHomeActivity::class.java)
+        i.flags = FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
         startActivity(i)
     }
 
@@ -107,8 +135,20 @@ class MainActivity : AppCompatActivity() {
 
         if(!sharedPref.getData("user").isNullOrBlank()) {
             val user = gson.fromJson(sharedPref.getData("user"), User::class.java)
+
+            if(!sharedPref.getData("rol").isNullOrBlank()){
+                val rol = sharedPref.getData("rol")?.replace("\"", "")
+                if(rol == "RESTAURANTE"){
+                    goToRestaurantHome()
+                } else if (rol == "CLIENTE"){
+                    goToClientHome()
+                } else if(rol == "REPARTIDOR"){
+                    goToDeliveryHome()
+                }
+            }
+
+        } else {
             goToClientHome()
-            Log.d("ClientHomeActivity","Usuario : $user")
         }
     }
 }
